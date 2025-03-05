@@ -24,7 +24,7 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<UsuarioResponseDTO> registroUsuario(@RequestBody @Valid UsuarioRequestDTO dto) {
         UsuarioModel usuarioModel = usuarioService.salvarRegistro(dto);
         UsuarioResponseDTO usuarioResponseDTO = new UsuarioResponseDTO(usuarioModel.getId(), usuarioModel.getUsuario(), usuarioModel.getSenha());

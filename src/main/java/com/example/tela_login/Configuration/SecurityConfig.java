@@ -17,7 +17,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Desabilita proteção CSRF para testes com Postman
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register").permitAll() // Permite login e registro sem autenticação
+                        .requestMatchers("/register", "/login").permitAll() // Permite login e registro sem autenticação
                         .anyRequest().authenticated() // Todas as outras requisições precisam estar autenticadas
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Sem sessão
