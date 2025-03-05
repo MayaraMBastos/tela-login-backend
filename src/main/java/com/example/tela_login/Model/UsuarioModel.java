@@ -19,6 +19,9 @@ public class UsuarioModel {
         this.senha = senha;
     }
 
+    public UsuarioModel() {
+    }
+
     public Long getId() {
         return id;
     }
