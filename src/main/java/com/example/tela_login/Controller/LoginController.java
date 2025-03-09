@@ -5,10 +5,7 @@ import com.example.tela_login.DTO.LoginResponseDTO;
 import com.example.tela_login.Service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/login")
@@ -20,6 +17,7 @@ public class LoginController {
         this.authService = authService;
     }
 
+    @CrossOrigin( origins = "*", allowedHeaders = "*")
     @PostMapping
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
         LoginResponseDTO response = authService.authenticate(dto);
