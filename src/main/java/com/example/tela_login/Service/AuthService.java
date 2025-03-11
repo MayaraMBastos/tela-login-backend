@@ -29,7 +29,7 @@ public class AuthService {
         }
 
         // Aqui você pode retornar um token ou informações relacionadas ao login
-        return new LoginResponseDTO(dto.usuario(),"Login bem sucedido");
+        return new LoginResponseDTO("Login bem-sucedido!", "/home");
     }
 
     private boolean passwordMatches(String plainPassword, String encryptedPassword) {

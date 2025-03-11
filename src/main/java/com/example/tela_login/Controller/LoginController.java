@@ -22,8 +22,8 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
+        // Servico de autenticacao de login de usuario; retorna respostas das validacoes e urls de redirecionamentos
         LoginResponseDTO response = authService.authenticate(dto);
-        System.out.println("Passou pelo controller");
         return ResponseEntity.ok(response);
     }
 }
