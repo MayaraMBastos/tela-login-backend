@@ -10,27 +10,30 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
+    private final BCryptPasswordEncoder passwordEncoder;
     private final UsuarioRepository userRepository;
 
     public AuthService(UsuarioRepository userRepository) {
+        this.passwordEncoder = new BCryptPasswordEncoder();
         this.userRepository = userRepository;
     }
 
     public LoginResponseDTO authenticate(LoginRequestDTO dto) {
+        // Buscar usuário no banco
         UsuarioModel user = userRepository.findByUsuario(dto.usuario())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Verifica se a senha está correta
+        // Comparar a senha fornecida com a senha criptografada
         if (!passwordMatches(dto.senha(), user.getSenha())) {
-            throw new RuntimeException("Credenciais inválidas");
+            throw new RuntimeException("Senha incorreta");
         }
 
-        return new LoginResponseDTO( user.getUsuario(), "Login bem-sucedido!");
+        // Aqui você pode retornar um token ou informações relacionadas ao login
+        return new LoginResponseDTO(dto.usuario(),"Login bem sucedido");
     }
 
-    private boolean passwordMatches(String rawPassword, String encryptedPassword) {
-        // Se a senha estiver criptografada no banco, use BCrypt para comparar
-        return new BCryptPasswordEncoder().matches(rawPassword, encryptedPassword);
+    private boolean passwordMatches(String plainPassword, String encryptedPassword) {
+        return passwordEncoder.matches(plainPassword, encryptedPassword);
     }
 }
 
