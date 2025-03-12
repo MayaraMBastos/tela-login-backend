@@ -7,6 +7,8 @@ import com.example.tela_login.Repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
 
@@ -20,15 +22,20 @@ public class AuthService {
 
     public LoginResponseDTO authenticate(LoginRequestDTO dto) {
         // Buscar usuário no banco
-        UsuarioModel user = userRepository.findByUsuario(dto.usuario())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        Optional<UsuarioModel> optionalUser = userRepository.findByUsuario(dto.usuario());
+
+        if (optionalUser.isEmpty()) {
+            return new LoginResponseDTO("Usuário não encontrado", null);
+        }
+
+        UsuarioModel user = optionalUser.get();
 
         // Comparar a senha fornecida com a senha criptografada
         if (!passwordMatches(dto.senha(), user.getSenha())) {
-            throw new RuntimeException("Senha incorreta");
+            return new LoginResponseDTO("Senha incorreta", null);
         }
 
-        // Aqui você pode retornar um token ou informações relacionadas ao login
+        // Caso login seja bem-sucedido
         return new LoginResponseDTO("Login bem-sucedido!", "/home");
     }
 
