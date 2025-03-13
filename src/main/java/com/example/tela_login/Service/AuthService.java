@@ -21,9 +21,15 @@ public class AuthService {
     }
 
     public LoginResponseDTO authenticate(LoginRequestDTO dto) {
+
+        if (dto.usuario().isEmpty()){
+            return new LoginResponseDTO("Usuario não pode estar em branco", null);
+        }
+
         // Buscar usuário no banco
         Optional<UsuarioModel> optionalUser = userRepository.findByUsuario(dto.usuario());
 
+        //Verifica se o usuario inserido esta cadastrado no banco
         if (optionalUser.isEmpty()) {
             return new LoginResponseDTO("Usuário não encontrado", null);
         }
@@ -39,8 +45,55 @@ public class AuthService {
         return new LoginResponseDTO("Login bem-sucedido!", "/home");
     }
 
-    private boolean passwordMatches(String plainPassword, String encryptedPassword) {
-        return passwordEncoder.matches(plainPassword, encryptedPassword);
+    private LoginResponseDTO validarCampos(LoginRequestDTO dto) {
+        if (dto.usuario() == null || dto.usuario().isEmpty()) {
+            return new LoginResponseDTO("Usuário não pode estar em branco.", null);
+        }
+        if (dto.senha() == null || dto.senha().isEmpty()) {
+            return new LoginResponseDTO("Senha não pode estar em branco.", null);
+        }
+        return null;
+    }
+
+    private UsuarioModel buscarUsuario(String usuario) {
+        return userRepository.findByUsuario(usuario).orElse(null);
+    }
+
+//    private LoginResponseDTO verificarTentativasBloqueio(UsuarioModel user) {
+//        if (user.getDataDesbloqueio() != null && LocalDateTime.now().isBefore(user.getDataDesbloqueio())) {
+//            return new LoginResponseDTO("Usuário bloqueado. Tente novamente após: " + user.getDataDesbloqueio(), null);
+//        }
+//        return null;
+//    }
+
+    private LoginResponseDTO validarSenha(String senha, UsuarioModel user) {
+        if (!passwordMatches(senha, user.getSenha())) {
+            //incrementarTentativas(user);
+            return new LoginResponseDTO("Senha incorreta.", null);
+        }
+        return null;
+    }
+
+//    private void incrementarTentativas(UsuarioModel user) {
+//        user.setTentativasFalhas(user.getTentativasFalhas() + 1);
+//
+//        if (user.getTentativasFalhas() >= 3) {
+//            user.setDataDesbloqueio(LocalDateTime.now().plusDays(3));
+//            user.setTentativasFalhas(0);
+//            userRepository.save(user);
+//        } else {
+//            userRepository.save(user);
+//        }
+//    }
+//
+//    private void resetarTentativas(UsuarioModel user) {
+//        user.setTentativasFalhas(0);
+//        user.setDataDesbloqueio(null);
+//        userRepository.save(user);
+//    }
+
+    private boolean passwordMatches(String senhaFornecida, String senhaArmazenada) {
+        return senhaFornecida.equals(senhaArmazenada); // Substituir por bcrypt se necessário
     }
 }
 
