@@ -4,6 +4,7 @@ import com.example.tela_login.DTO.LoginRequestDTO;
 import com.example.tela_login.DTO.LoginResponseDTO;
 import com.example.tela_login.Model.UsuarioModel;
 import com.example.tela_login.Repository.UsuarioRepository;
+import com.example.tela_login.Util.AuthUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,37 +22,46 @@ public class AuthService {
     }
 
     public LoginResponseDTO authenticate(LoginRequestDTO dto) {
+        // Valida se os campos foram preenchidos
+        LoginResponseDTO validacaoCampos = validarCampos(dto);
+        if (validacaoCampos != null) return validacaoCampos;
 
-        if (dto.usuario().isEmpty()){
-            return new LoginResponseDTO("Usuario não pode estar em branco", null);
-        }
+        // Busca o usuário no banco
+        UsuarioModel user = buscarUsuario(dto.usuario());
+        if (user == null) return new LoginResponseDTO("Usuário não encontrado", null);
 
-        // Buscar usuário no banco
-        Optional<UsuarioModel> optionalUser = userRepository.findByUsuario(dto.usuario());
+        // Verifica se o usuário está bloqueado
+//        LoginResponseDTO bloqueioResponse = verificarTentativasBloqueio(user);
+//        if (bloqueioResponse != null) return bloqueioResponse;
 
-        //Verifica se o usuario inserido esta cadastrado no banco
-        if (optionalUser.isEmpty()) {
-            return new LoginResponseDTO("Usuário não encontrado", null);
-        }
+        // Valida a senha
+        LoginResponseDTO senhaResponse = validarSenha(dto.senha(), user);
+        if (senhaResponse != null) return senhaResponse;
 
-        UsuarioModel user = optionalUser.get();
+        // Se o login for bem-sucedido, reseta as tentativas
+//        resetarTentativas(user);
 
-        // Comparar a senha fornecida com a senha criptografada
-        if (!passwordMatches(dto.senha(), user.getSenha())) {
-            return new LoginResponseDTO("Senha incorreta", null);
-        }
-
-        // Caso login seja bem-sucedido
         return new LoginResponseDTO("Login bem-sucedido!", "/home");
     }
 
     private LoginResponseDTO validarCampos(LoginRequestDTO dto) {
+        //Valida se o usuario esta em branco
         if (dto.usuario() == null || dto.usuario().isEmpty()) {
             return new LoginResponseDTO("Usuário não pode estar em branco.", null);
         }
+        //Valida se a senha esta em branco
         if (dto.senha() == null || dto.senha().isEmpty()) {
             return new LoginResponseDTO("Senha não pode estar em branco.", null);
         }
+//Valida se o usuario contem caracteres especiais
+        if (AuthUtil.contemCaracteresEspeciais(dto.usuario())) {
+            return new LoginResponseDTO("Usuário não pode conter caracteres especiais.", null);
+        }
+        //Valida se o usuario contem caracteres repetidos em sequencia como ggg aaa etc
+        if (AuthUtil.contemRepeticaoExcessiva(dto.usuario())) {
+            return new LoginResponseDTO("Usuario não pode conter caracteres repetidos sequencialmente.", null);
+        }
+
         return null;
     }
 
