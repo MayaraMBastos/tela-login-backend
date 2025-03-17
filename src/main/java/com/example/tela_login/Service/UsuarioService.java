@@ -38,6 +38,7 @@ public class UsuarioService {
         String erroUsuario = AuthUtil.validarUsuario(dto.usuario());
         if (erroUsuario != null) erros.add(erroUsuario);
 
+        //Se a senha nao for validada
         String erroSenha = AuthUtil.validarSenha(dto.senha());
         if (erroSenha != null) erros.add(erroSenha);
 
