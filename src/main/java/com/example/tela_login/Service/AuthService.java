@@ -2,10 +2,13 @@ package com.example.tela_login.Service;
 
 import com.example.tela_login.DTO.LoginRequestDTO;
 import com.example.tela_login.DTO.LoginResponseDTO;
+import com.example.tela_login.DTO.UsuarioRequestDTO;
+import com.example.tela_login.DTO.UsuarioResponseDTO;
 import com.example.tela_login.Model.UsuarioModel;
 import com.example.tela_login.Repository.UsuarioRepository;
 import com.example.tela_login.Util.AuthUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,12 +18,15 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository userRepository;
 
-    public AuthService(UsuarioRepository userRepository) {
-        this.passwordEncoder = new BCryptPasswordEncoder();
+    private final UsuarioService usuarioService;
+
+    public AuthService(PasswordEncoder passwordEncoder, UsuarioRepository userRepository, UsuarioService usuarioService) {
+        this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.usuarioService = usuarioService;
     }
 
     public LoginResponseDTO authenticate(LoginRequestDTO dto) {
@@ -55,9 +61,43 @@ public class AuthService {
         return new LoginResponseDTO(List.of("Login bem-sucedido!"), "/home");
     }
 
+    public UsuarioResponseDTO authenticateRegistro(UsuarioRequestDTO dto){
+
+        List<String> erros = new ArrayList<>();
+
+        // Chamando os validadores e adicionando os erros na lista
+        String erroUsuario = AuthUtil.validarUsuario(dto.usuario());
+        if (erroUsuario != null) erros.add(erroUsuario);
+
+        String erroSenha = AuthUtil.validarSenha(dto.senha());
+        if (erroSenha != null) erros.add(erroSenha);
+
+        //Se a confirmacao de senha nao corresponder a senha inserida
+        String erroConfSenha = AuthUtil.validarConfirmacaoSenha(dto.senha(), dto.confSenha());
+        if (erroConfSenha  != null ) erros.add(erroConfSenha );
+
+        //Verificar se o usuario ja existe no banco
+        if (userRepository.findByUsuario(dto.usuario()) != null){
+            erros.add("Nome de usuario indisponivel");
+        }
+
+        // Se houver erros de validação, retorna imediatamente
+        if (!erros.isEmpty()) {
+            return new UsuarioResponseDTO(erros, null);
+        }
+
+        // Chamando UsuarioService para salvar no banco
+        UsuarioModel usuarioSalvo = usuarioService.salvarRegistro(dto);
+
+        // Caso registro seja bem-sucedido
+        return new UsuarioResponseDTO(List.of("Registro bem-sucedido!"), "/login");
+
+    }
+
     private boolean passwordMatches(String senhaFornecida, String senhaArmazenada) {
         return senhaFornecida.equals(senhaArmazenada); // Substituir por bcrypt se necessário
     }
+
 }
 
 

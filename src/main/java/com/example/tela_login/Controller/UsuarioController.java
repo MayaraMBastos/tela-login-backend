@@ -4,6 +4,7 @@ import com.example.tela_login.DTO.UsuarioRequestDTO;
 import com.example.tela_login.DTO.UsuarioResponseDTO;
 import com.example.tela_login.Model.UsuarioModel;
 import com.example.tela_login.Repository.UsuarioRepository;
+import com.example.tela_login.Service.AuthService;
 import com.example.tela_login.Service.UsuarioService;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
@@ -12,20 +13,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/register")
+@RequestMapping("/registro")
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
 
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
+    private  final AuthService authService;
+
+    public UsuarioController(AuthService authService) {
+        this.authService = authService;
     }
 
     @CrossOrigin( origins = "*", allowedHeaders = "*")
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> registroUsuario(@RequestBody @Valid UsuarioRequestDTO dto) {
-        UsuarioModel usuarioModel = usuarioService.salvarRegistro(dto);
-        UsuarioResponseDTO usuarioResponseDTO = new UsuarioResponseDTO(usuarioModel.getId(), usuarioModel.getUsuario(), usuarioModel.getSenha());
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioResponseDTO);
+        UsuarioResponseDTO responseDTO = authService.authenticateRegistro(dto);
+        return ResponseEntity.ok(responseDTO);
     }
 }
