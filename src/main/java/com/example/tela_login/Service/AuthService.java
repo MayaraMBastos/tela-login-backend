@@ -32,6 +32,12 @@ public class AuthService {
     public LoginResponseDTO authenticate(LoginRequestDTO dto) {
         List<String> erros = new ArrayList<>();
 
+        // Buscar usuário no banco
+        Optional<UsuarioModel> optionalUser = userRepository.findByUsuario(dto.usuario());
+        if (optionalUser.isEmpty()) {
+            return new LoginResponseDTO(List.of("Usuário não encontrado."), null);
+        }
+
         // Chamando os validadores e adicionando os erros na lista
         String erroUsuario = AuthUtil.validarUsuario(dto.usuario());
         if (erroUsuario != null) erros.add(erroUsuario);
@@ -39,22 +45,16 @@ public class AuthService {
         String erroSenha = AuthUtil.validarSenha(dto.senha());
         if (erroSenha != null) erros.add(erroSenha);
 
-        // Se houver erros de validação, retorna imediatamente
-        if (!erros.isEmpty()) {
-            return new LoginResponseDTO(erros, null);
-        }
-
-        // Buscar usuário no banco
-        Optional<UsuarioModel> optionalUser = userRepository.findByUsuario(dto.usuario());
-        if (optionalUser.isEmpty()) {
-            return new LoginResponseDTO(List.of("Usuário não encontrado."), null);
-        }
-
         UsuarioModel user = optionalUser.get();
 
         // Comparar a senha fornecida com a senha criptografada
-        if (!passwordMatches(dto.senha(), user.getSenha())) {
+        if (!passwordEncoder.matches(dto.senha(), user.getSenha())) {
             return new LoginResponseDTO(List.of("Senha incorreta."), null);
+        }
+
+        // Se houver erros de validação, retorna imediatamente
+        if (!erros.isEmpty()) {
+            return new LoginResponseDTO(erros, null);
         }
 
         // Caso login seja bem-sucedido
@@ -77,9 +77,11 @@ public class AuthService {
         if (erroConfSenha  != null ) erros.add(erroConfSenha );
 
         //Verificar se o usuario ja existe no banco
-        if (userRepository.findByUsuario(dto.usuario()) != null){
+        Optional<UsuarioModel> optionalUser = userRepository.findByUsuario(dto.usuario());
+        if (!optionalUser.isEmpty()) {
             erros.add("Nome de usuario indisponivel");
         }
+
 
         // Se houver erros de validação, retorna imediatamente
         if (!erros.isEmpty()) {
@@ -94,9 +96,7 @@ public class AuthService {
 
     }
 
-    private boolean passwordMatches(String senhaFornecida, String senhaArmazenada) {
-        return senhaFornecida.equals(senhaArmazenada); // Substituir por bcrypt se necessário
-    }
+
 
 }
 

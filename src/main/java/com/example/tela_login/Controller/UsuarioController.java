@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/registro")
+@CrossOrigin(origins = "http://192.168.56.1:3000")
 public class UsuarioController {
 
 
@@ -23,8 +23,11 @@ public class UsuarioController {
         this.authService = authService;
     }
 
-    @CrossOrigin( origins = "*", allowedHeaders = "*")
-    @PostMapping
+ @GetMapping("/registro")
+    public String pagRegistro(){
+        return "/registro";
+    }
+    @PostMapping ("/resgistro")
     public ResponseEntity<UsuarioResponseDTO> registroUsuario(@RequestBody @Valid UsuarioRequestDTO dto) {
         UsuarioResponseDTO responseDTO = authService.authenticateRegistro(dto);
         return ResponseEntity.ok(responseDTO);

@@ -19,6 +19,11 @@ public class LoginController {
         this.authService = authService;
     }
 
+    @GetMapping("/login")
+    public String pagLogin(){
+        return "/login";
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
