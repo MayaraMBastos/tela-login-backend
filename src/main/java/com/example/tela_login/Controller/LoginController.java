@@ -2,7 +2,7 @@ package com.example.tela_login.Controller;
 
 import com.example.tela_login.DTO.LoginRequestDTO;
 import com.example.tela_login.DTO.LoginResponseDTO;
-import com.example.tela_login.Service.AuthService;
+import com.example.tela_login.Service.LoginService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,22 +13,18 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
 
     @Autowired
-    private final AuthService authService;
+    private final LoginService loginService;
 
-    public LoginController(AuthService authService) {
-        this.authService = authService;
+    public LoginController(LoginService loginService) {
+        this.loginService = loginService;
     }
 
-    @GetMapping("/login")
-    public String pagLogin(){
-        return "/login";
-    }
 
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
         // Servico de autenticacao de login de usuario; retorna respostas das validacoes e urls de redirecionamentos
-        LoginResponseDTO response = authService.authenticate(dto);
+        LoginResponseDTO response = loginService.authenticate(dto);
         return ResponseEntity.ok(response);
     }
 }
